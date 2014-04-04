@@ -1,4 +1,5 @@
 """
+@material: http://pages.cs.wisc.edu/~remzi/rank.html
 @description: algorithms to rank the universities based on graph
 @author: Bolun
 """
