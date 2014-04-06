@@ -30,7 +30,7 @@ def read_data(filename):
         line = line.lower()
         lines = line.split(";")
         if len(lines) == 2:
-            if lines[0].strip() in top_50 and lines[1].strip() in top_50:
+#             if lines[0].strip() in top_50 and lines[1].strip() in top_50:
                 edge = []
                 for w in lines:
                     edge.append(w.strip())
@@ -40,12 +40,12 @@ def read_data(filename):
                         s.update({w.strip() : 1})
                 edge_list_all.append(edge)
     f.close()
-#     univlist = sorted(s.iteritems(), key = lambda asd:asd[0], reverse = False)
-#     fo = open("../data/out.csv","w")
-#     for i in univlist:
-#         fo.write("%s;%d\n" %(i[0],i[1]))
-#     fo.close()
-
+    univlist = sorted(s.iteritems(), key = lambda asd:asd[0], reverse = False)
+    fo = open("../data/out_extended.csv","w")
+    for i in univlist:
+        fo.write("%s;%d\n" %(i[0],i[1]))
+    fo.close()
+    print len(edge_list_all)
     ## re-organize the edge with weights
     edge_dict = {}
     for edge in edge_list_all:
@@ -138,26 +138,34 @@ node_list, edge_list = read_data("../data/data_top50_cs.csv")
 G = nx.DiGraph()
 G = construct_graph(node_list, edge_list)
 
-# rank in degree
+# top_50 = []
+# f = open("../data/univ_top_50_cs.csv","r")
+# for line in f:
+#     line = line.strip().lower()
+#     top_50.append(line)
+# f.close()
+# 
+# #rank in degree
 # nodes = rank_univ(G, t = "in_degree")
-# f = open("../result/univ_top_50_cs_indegree.csv","w")
+# f = open("../result/result_top50_cs_extended/univ_top_50_cs_indegree.csv","w")
 # for node in nodes:
-#     f.write("%s;%d\n" %(node[0], node[1]))
+#     if node[0] in top_50:
+#         f.write("%s;%d\n" %(node[0], node[1]))
 # f.close()
-
-# rank out degree
+# 
+# #rank out degree
 # nodes = rank_univ(G, t = "out_degree")
-# f = open("../result/univ_top_50_cs_outdegree.csv","w")
+# f = open("../result/result_top50_cs_extended/univ_top_50_cs_outdegree.csv","w")
 # for node in nodes:
-#     f.write("%s;%d\n" %(node[0], node[1]))
+#     if node[0] in top_50:
+#         f.write("%s;%d\n" %(node[0], node[1]))
 # f.close()
-# rank edge degree
+# #rank edge degree
 # nodes = rank_univ(G, t = "edge_degree")
-# f = open("../result/univ_top_50_cs_edgedegree.csv","w")
+# f = open("../result/result_top50_cs_extended/univ_top_50_cs_edgedegree.csv","w")
 # for node in nodes:
-#     f.write("%s;%d\n" %(node[0], node[1]))
+#     if node[0] in top_50:
+#         f.write("%s;%d\n" %(node[0], node[1]))
 # f.close()
 
-
-
-#draw_graph(G)
+# draw_graph(G)

@@ -73,7 +73,7 @@ def rank():
     for line in f:
         list1.append(line.strip())
     f.close()
-    f = open("../result/univ_top_50_cs_edgedegree.csv","r")
+    f = open("../result/result_top50_cs_extended/univ_top_50_cs_hits.csv","r")
     for line in f:
         lines = line.split(";")
         list2.append(lines[0].strip())
@@ -83,14 +83,14 @@ def rank():
     
     distr = sorted(distr.iteritems(), key = lambda asd:asd[1]["diff"], reverse = True)
     
-    f = open("../result/diff_distribution_edgedegree.csv","w")
+    f = open("../result/result_top50_cs_extended/diff_distribution_hits.csv","w")
     f.write("univ,ab_diff,+/-\n")
     for item in distr:
         f.write("%s,%.1f,%s\n" %(item[0], item[1]["diff"], item[1]["type"]))
     f.close()
-    exit(0)
     
     print rank_dist(list1, list2)
+    exit(0)
     
     list2 = list(list1)
     random.shuffle(list2)
