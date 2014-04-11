@@ -106,8 +106,8 @@ class bipartite_graph:
     def get_hub_matrix(self):
         auth_list = self.v_auth.keys()
         hub_list = self.v_hub.keys()
-        print len(hub_list), hub_list
-        print len(auth_list), auth_list
+#         print len(hub_list), hub_list
+#         print len(auth_list), auth_list
         
         HubMatrix = [[0.0 for j in range(len(auth_list))] for i in range(len(hub_list))]
         for i in range(len(HubMatrix)):
@@ -505,13 +505,16 @@ def modified_SALSA(graph, max_iterations=100, min_delta=0.00001):
         
     return auth
 
-def CreditPropagation(graph, cr = 0.85, max_iterations=100, min_delta=0.00001):
+def CreditPropagation(graph, original_rank = {}, cr = 0.15, max_iterations=100, min_delta=0.00001):
     """
     Compute and return the credit score in an directed graph
-    from incoming edges
+    @comment: This algorithm should be applied on the base of pagerank/hits so as to reinforce the score distribution
     
     @type  graph: digraph
     @param graph: Digraph.
+    
+    @type original_rank: Dict
+    @param original_rank: dictionary of initial rankings(credits) of nodes
     
     @type  damping_factor: number
     @param damping_factor: PageRank dumping factor.
@@ -529,27 +532,33 @@ def CreditPropagation(graph, cr = 0.85, max_iterations=100, min_delta=0.00001):
         return {}
 
     # itialize the page rank dict with 1/N for all nodes
-    credit = dict.fromkeys(nodes, 1.0)
+    credit = dict(original_rank)
 
     i = 0
     for i in range(max_iterations):
-        old_credit = dict()
+        old_credit = dict(credit) # make a copy of the previous credit scores
         for p in nodes:
-            old_credit[p] = credit[p]
-            split_factor = 0.0
+            auth_score = 0.0
+            auth_factor = 0.0
             in_edges = graph.in_edges(p, data = True)
             for e in in_edges:
-                split_factor += e[2]["weight"]
-            credit_list = [credit.get(q[0])*q[2]["weight"] for q in in_edges]
-            #print auth_list
-            #print hub_list
-            credit[p] = (1-cr)*credit[p]+cr*sum(credit_list)
+                auth_factor += e[2]["weight"]
+            for e in in_edges:
+                auth_score += (1.0+cr)*old_credit[e[0]]#*e[2]["weight"]
+            
+            hub_score = 0.0
+            hub_factor = 0.0
+            out_edges = graph.out_edges(p, data = True)
+            for e in out_edges:
+                hub_factor += e[2]["weight"]
+            for e in out_edges:
+                hub_score += (1.0-cr)*old_credit[e[1]]#*e[2]["weight"]
+            credit[p] = auth_score + hub_score + old_credit[p]#*(len(in_edges)+len(out_edges))# update the credits
 
         credit = normalize(credit)
 
         delta = sum((math.fabs(old_credit[k] - credit[k]) for k in credit))
         if delta <= min_delta:
-            print "!", i
             return credit
     return credit
 
