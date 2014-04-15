@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import stats
 import random
 
-
 class case_analysis:
     def __init__(self):
         self.in_edges = {}
@@ -325,6 +324,7 @@ def read_data_in_range(filename = "./", start_year = 2000, end_year = 2014, self
 #         f.write("%s,%d,%.3f\n" %(index[i], int(dist[i]), cdf[i]))
 #     f.close()
 
+
     edge_list = []
     for item in edge_dict.iteritems():
         edge = []
@@ -343,7 +343,7 @@ def read_data_in_range(filename = "./", start_year = 2000, end_year = 2014, self
             edge.append(item[1])
             edge_list.append(edge)
     
-    print len(edge_list), edge_list
+    #print len(edge_list), edge_list
     
     node_list = sorted(s.keys(), reverse = False)
     return node_list, edge_list
@@ -473,10 +473,13 @@ def diff_distribution(file1 = "", file2 = ""):
     return result
 
 # ## calculate the diff distribution
-# res = diff_distribution("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/diff_distribution_from1949_to1994_weightedPR_wo_norm.csv",\
-#                   "../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/diff_distribution_from1995_to2015_weightedPR_wo_norm.csv")
-#  
-# f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/diff_distribution_summary_weightedPR_wo_norm.csv","w")
+# res = diff_distribution("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_"+\
+#                         "removed/diff_distribution_from1949_to1994_hits.csv","../result/result_top50"+\
+#                         "_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/diff_distribution"+\
+#                         "_from1995_to2015_hits.csv")
+#   
+# f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/diff_distri"+\
+#          "bution_summary_hits.csv","w")
 # f.write("univ,1949,1995,diff\n")
 # for i in range(len(res)):
 #     f.write("%s,%d,%d,%d\n" %(res[i][0], res[i][1][0], res[i][1][1], res[i][1][2]))
