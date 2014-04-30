@@ -105,16 +105,19 @@ class case_analysis:
 # 
 # exit(0)
 
-def read_data(filename):
+def read_data(filename, self_edge = True):
     """
     @type filename: string
     @param filename: input file path and name
+    
+    @type self_edge: Boolean
+    @param self_edge: whether self edges are included or not; True-yes, False-not
     
     @return: list of nodes
     @return: list of edges
     """
     top_50 = []
-    f = open("../data/univ_top_50_cs.txt","r")
+    f = open("../data/univ_top_40_me.txt","r")
     for line in f:
         line = line.strip().lower()
         top_50.append(line)
@@ -128,12 +131,11 @@ def read_data(filename):
     s = {}
     edge_list_all = []
     f = open(filename,"r")
-    f.readline() # skip the first row
+#     print f.readline() # skip the first row
     for line in f:
         line = line.lower()
         line = line.strip() # remove those "\r\n"
-        lines = line.split(",") ## subject to change
-        
+        lines = line.split(";") ## subject to change
         if len(lines) == 2 or len(lines) == 3:
 #             if lines[0].strip() in top_50 and lines[1].strip() in top_50:
                 edge = []
@@ -173,7 +175,7 @@ def read_data(filename):
     f.close()
     
 #     # statistical
-#     f = open("../result/result_top50_cs_newdata_apr09/year_statistical.csv","w")
+#     f = open("../result/me/year_statistical.csv","w")
 #     f.write("univ,total,wyear\n")
 #     for key in stat:
 #         f.write("%s,%d,%d\n" %(key, stat[key]['total'], stat[key]['wyear']))
@@ -184,22 +186,22 @@ def read_data(filename):
 #     print len(index), index
 #     print len(dist), dist
 #     print len(cdf), cdf
-#  
+#   
 #     # the CDF of year distribution
-#     f = open("../result/result_top50_cs_newdata_apr09/year_cdf.csv","w")
+#     f = open("../result/me/year_cdf.csv","w")
 #     f.write("year,freq,percentile\n")
 #     for i in range(len(index)):
 #         f.write("%s,%d,%.3f\n" %(index[i], int(dist[i]), cdf[i]))
 #     f.close()
-# 
+#  
 #     exit(0)
 
 #     univlist = sorted(s.iteritems(), key = lambda asd:asd[0], reverse = False)
-#     fo = open("../data/out_extended.csv","w")
+#     fo = open("../data/out_me.csv","w")
 #     for i in univlist:
 #         fo.write("%s,%d\n" %(i[0],i[1]))
 #     fo.close()
-
+#     exit(0)
 
     ## re-organize the edge with weights
     edge_dict = {}
@@ -211,14 +213,23 @@ def read_data(filename):
             edge_dict.update({key : 1.0})
     edge_list = []
     for item in edge_dict.iteritems():
-        edge = []
-        edge.extend(item[0].split("#"))
-        edge.append(item[1])
-        edge_list.append(edge)
-            
+        if self_edge == True:
+            edge = []
+            edge.extend(item[0].split("#"))
+            edge.append(item[1])
+            edge_list.append(edge)
+        else:
+            edge = []
+            nodes = item[0].split("#")
+            if not nodes[0] == nodes[1]:
+                edge.extend(nodes)
+                edge.append(item[1])
+                edge_list.append(edge)
+        
     node_list = sorted(s.keys(), reverse = False)
 
     return node_list, edge_list
+
 
 def read_data_in_range(filename = "./", start_year = 2000, end_year = 2014, self_edge = True):
     """
@@ -240,7 +251,7 @@ def read_data_in_range(filename = "./", start_year = 2000, end_year = 2014, self
     @return: list of edges
     """
     top_50 = []
-    f = open("../data/univ_top_50_cs.txt","r")
+    f = open("../data/univ_top_40_me.txt","r")
     for line in f:
         line = line.strip().lower()
         top_50.append(line)
@@ -253,7 +264,7 @@ def read_data_in_range(filename = "./", start_year = 2000, end_year = 2014, self
     for line in f:
         line = line.lower()
         line = line.strip() # remove those "\r\n"
-        lines = line.split(",") ## subject to change
+        lines = line.split(";") ## subject to change
         
         if len(lines) == 2 or len(lines) == 3:
 #             if lines[0].strip() in top_50 and lines[1].strip() in top_50:
@@ -473,14 +484,11 @@ def diff_distribution(file1 = "", file2 = ""):
     return result
 
 # ## calculate the diff distribution
-# res = diff_distribution("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_"+\
-#                         "removed/diff_distribution_from1949_to1994_hits.csv","../result/result_top50"+\
-#                         "_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/diff_distribution"+\
-#                         "_from1995_to2015_hits.csv")
-#   
-# f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/diff_distri"+\
-#          "bution_summary_hits.csv","w")
-# f.write("univ,1949,1995,diff\n")
+# res = diff_distribution("../result/me/comparison/diff_distribution_from1946_to1990_indegree.csv",
+#                         "../result/me/comparison/diff_distribution_from1991_to2014_indegree.csv")
+#    
+# f = open("../result/me/comparison/diff_distribution_summary_indegree.csv","w")
+# f.write("univ,1946,1991,diff\n")
 # for i in range(len(res)):
 #     f.write("%s,%d,%d,%d\n" %(res[i][0], res[i][1][0], res[i][1][1], res[i][1][2]))
 # f.close()
@@ -553,56 +561,55 @@ def rank_univ(G, t = "edge_degree"):
     nodes = sorted(nodes, key = lambda asd:asd[1], reverse = True)
     return nodes
 
+#  
+# bucket = {}
+# f = open("../result/result_top50_cs_newdata_apr09/year_statistical_from1995_to2015.csv","r")
+# f.readline()
+# for line in f:
+#     lines = line.split(",")
+#     try:
+#         bucket.update({lines[0] : int(lines[2])})
+#     except:
+#         pass
+# f.close()
  
-bucket = {}
-f = open("../result/result_top50_cs_newdata_apr09/year_statistical_from1995_to2015.csv","r")
-f.readline()
-for line in f:
-    lines = line.split(",")
-    try:
-        bucket.update({lines[0] : int(lines[2])})
-    except:
-        pass
-f.close()
- 
-#node_list, edge_list = read_data("../data/data_top50_cs_apr09.csv")
-node_list, edge_list = read_data_in_range("../data/data_top50_cs_apr09.csv", start_year = 1949, end_year = 1994, self_edge = False)
-#node_list, edge_list = read_data_subtracted_sample("../data/data_top50_cs_apr09.csv", bucket)
- 
-G = nx.DiGraph()
-G = construct_graph(node_list, edge_list)
- 
-# print "graph nodes", len(G.nodes()), G.nodes()
-# print "graph edges", len(G.edges()), G.edges()
- 
-top_50 = []
-f = open("../data/univ_top_50_cs.txt","r")
-for line in f:
-    line = line.strip().lower()
-    top_50.append(line)
-f.close()
-  
-#rank in degree
-nodes = rank_univ(G, t = "in_degree")
-f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/univ_top50_cs_from1949_to1994_indegree.csv","w")
-for node in nodes:
-    if node[0] in top_50:
-        f.write("%s;%d\n" %(node[0], node[1]))
-f.close()
- 
-#rank out degree
-nodes = rank_univ(G, t = "out_degree")
-f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/univ_top50_cs_from1949_to1994_outdegree.csv","w")
-for node in nodes:
-    if node[0] in top_50:
-        f.write("%s;%d\n" %(node[0], node[1]))
-f.close()
-#rank edge degree
-nodes = rank_univ(G, t = "edge_degree")
-f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/univ_top50_cs_from1949_to1994_edgedegree.csv","w")
-for node in nodes:
-    if node[0] in top_50:
-        f.write("%s;%d\n" %(node[0], node[1]))
-f.close()
+# #node_list, edge_list = read_data("../data/data_top50_cs_apr09.csv")
+# node_list, edge_list = read_data_in_range("../data/data_top40_me.csv", start_year = 1991, end_year = 2014, self_edge = False)
+# #node_list, edge_list = read_data_subtracted_sample("../data/data_top50_cs_apr09.csv", bucket)
+# G = nx.DiGraph()
+# G = construct_graph(node_list, edge_list)
+#  
+# # print "graph nodes", len(G.nodes()), G.nodes()
+# # print "graph edges", len(G.edges()), G.edges()
+#  
+# top_50 = []
+# f = open("../data/univ_top_40_me.txt","r")
+# for line in f:
+#     line = line.strip().lower()
+#     top_50.append(line)
+# f.close()
+#   
+# #rank in degree
+# nodes = rank_univ(G, t = "in_degree")
+# f = open("../result/me/univ_top40_me_from1991_to2014_indegree.csv","w")
+# for node in nodes:
+#     if node[0] in top_50:
+#         f.write("%s;%d\n" %(node[0], node[1]))
+# f.close()
+#  
+# #rank out degree
+# nodes = rank_univ(G, t = "out_degree")
+# f = open("../result/me/univ_top40_me_from1991_to2014_outdegree.csv","w")
+# for node in nodes:
+#     if node[0] in top_50:
+#         f.write("%s;%d\n" %(node[0], node[1]))
+# f.close()
+# #rank edge degree
+# nodes = rank_univ(G, t = "edge_degree")
+# f = open("../result/me/univ_top40_me_from1991_to2014_edgedegree.csv","w")
+# for node in nodes:
+#     if node[0] in top_50:
+#         f.write("%s;%d\n" %(node[0], node[1]))
+# f.close()
  
 # draw_graph(G)

@@ -69,12 +69,11 @@ def diff_distribution(list1 = [], list2 = []):
 def rank():
     list1 = []
     list2 = []
-    f = open("../data/univ_top_50_cs.txt","r")
+    f = open("../data/univ_top_40_me.txt","r")
     for line in f:
         list1.append(line.strip())
     f.close()
-    f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/univ_top50"+\
-             "_cs_from1995_to2015_CreditProp_hits.csv","r")
+    f = open("../result/me/comparison/univ_top40_me_from1946_to1990_salsa_modified.csv","r")
     for line in f:
         lines = line.split(";")
         list2.append(lines[0].strip())
@@ -84,8 +83,7 @@ def rank():
     
     distr = sorted(distr.iteritems(), key = lambda asd:asd[1]["diff"], reverse = True)
     
-    f = open("../result/result_top50_cs_newdata_apr09/result_top50_cs_extended/comparison_self_edge_removed/diff_distribut"+\
-             "ion_from1995_to2015_CreditProp_hits.csv","w")
+    f = open("../result/me/comparison/diff_distribution_from1946_to1990_salsa_modified.csv","w")
     f.write("univ,ab_diff,+/-\n")
     for item in distr:
         f.write("%s,%.1f,%s\n" %(item[0], item[1]["diff"], item[1]["type"]))

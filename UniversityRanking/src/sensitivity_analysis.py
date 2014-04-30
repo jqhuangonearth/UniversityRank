@@ -108,10 +108,10 @@ def sensitive_3():
         top_50.append(line)
     f.close()
     
-    fo = open("../result/result_top50_cs_newdata_apr09/sensitivity/inedge-1/sensitivity_diff_weightedPR_wo_norm_1995-2015-inedge1.csv","w")
-    node_list, edge_list = dp.read_data_in_range("../data/data_top50_cs_apr09.csv", start_year = 1995, end_year = 2015, self_edge = False)
+    fo = open("../result/result_top50_cs_newdata_apr09/sensitivity/all/sensitivity_diff_hits_weighted-inedge1.csv","w")
+    node_list, edge_list = dp.read_data("../data/data_top50_cs_apr09.csv", self_edge = False)
     G = dp.construct_graph(node_list, edge_list)
-    hits = algo.weighted_PR_wonorm(G, damping_factor = 0.85, max_iterations = 100, min_delta = 0.00001)
+    hits = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
     result = sorted(hits.iteritems(), key = lambda asd:asd[1], reverse = True)
     G.clear()
     
@@ -127,10 +127,10 @@ def sensitive_3():
 
     for k in range(len(original_r)):
 #         if not original_r[k][0] == "mit":
-            node_list, edge_list = dp.read_data_in_range("../data/data_top50_cs_apr09.csv", start_year = 1995, end_year = 2015, self_edge = False)
+            node_list, edge_list = dp.read_data("../data/data_top50_cs_apr09.csv", self_edge = False)
             G = dp.construct_graph(node_list, edge_list)
             G = remove_significant_edge(G, original_r[k][0], rank = rank) ### add one edge from MIT to <node>
-            hits = algo.weighted_PR_wonorm(G, damping_factor = 0.85, max_iterations = 100, min_delta = 0.00001)
+            hits = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
             result = sorted(hits.iteritems(), key = lambda asd:asd[1], reverse = True)
             #result = sorted(hits.iteritems(), key = lambda asd:asd[1], reverse = True)
             G.clear()
@@ -168,7 +168,6 @@ def remove_significant_edge(G, univ = "harvard", rank = []):
     
     @return: new graph with remove edge
     """
-    
     inedges = G.in_edges(univ, data = True)
     innodes = [e[0] for e in inedges]
     target = ""
