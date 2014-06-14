@@ -155,6 +155,141 @@ def sensitive_3():
     fo.close()
 
 
+def sensitive_remove_edge(filename1, filename2, outputfilename, type = "hits_weighted"):
+    top_50 = []
+    f = open(filename2,"r")
+    for line in f:
+        line = line.strip().lower()
+        top_50.append(line)
+    f.close()
+    
+    fo = open(outputfilename,"w")
+    node_list, edge_list = dp.read_data(filename1, filename2, self_edge = False, extended = True)
+    G = dp.construct_graph(node_list, edge_list)
+    #r = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
+    r = choose_algorithm(G, type = type)
+    result = sorted(r.iteritems(), key = lambda asd:asd[1], reverse = True)
+    G.clear()
+    
+    rank = []
+    for e in result:
+        if e[0] in top_50:
+            rank.append(e[0])
+
+    original_r = []
+    for e in result:
+        if e[0] in top_50:
+            original_r.append([e[0]])
+
+    for k in range(len(original_r)):
+#         if not original_r[k][0] == "mit":
+            node_list, edge_list = dp.read_data(filename1, filename2, self_edge = False, extended = True)
+            G = dp.construct_graph(node_list, edge_list)
+            G = remove_significant_edge(G, original_r[k][0], rank = rank) ### add one edge from MIT to <node>
+            #r = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
+            r = choose_algorithm(G, type = type)
+            result = sorted(r.iteritems(), key = lambda asd:asd[1], reverse = True)
+            #result = sorted(hits.iteritems(), key = lambda asd:asd[1], reverse = True)
+            G.clear()
+            res1 = []
+            for e in result:
+                if e[0] in top_50:
+                    res1.append(e[0])
+            kr = 0
+            for i in range(len(res1)):
+                if res1[i] == original_r[k][0]:
+                    kr = i
+            original_r[k].append(k-kr)
+    print original_r
+    fo.write("univ,diff-edge1\n")
+    for r in original_r:
+        for i in range(len(r)):
+            if i == 0:
+                fo.write(str(r[i]))
+            else:
+                fo.write(","+str(r[i]))
+        fo.write("\n")
+    fo.close()
+
+
+def sensitive_add_edge(filename1, filename2, outputfilename, type = "hits_weighted", add_node = "mit"):
+    top_50 = []
+    f = open(filename2,"r")
+    for line in f:
+        line = line.strip().lower()
+        top_50.append(line)
+    f.close()
+    
+    fo = open(outputfilename,"w")
+    node_list, edge_list = dp.read_data(filename1, filename2, self_edge = False, extended = True)
+    G = dp.construct_graph(node_list, edge_list)
+    #r = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
+    r = choose_algorithm(G, type = type)
+    result = sorted(r.iteritems(), key = lambda asd:asd[1], reverse = True)
+    G.clear()
+    
+    rank = []
+    for e in result:
+        if e[0] in top_50:
+            rank.append(e[0])
+
+    original_r = []
+    for e in result:
+        if e[0] in top_50:
+            original_r.append([e[0]])
+
+    for k in range(len(original_r)):
+#         if not original_r[k][0] == "mit":
+            node_list, edge_list = dp.read_data(filename1, filename2, self_edge = False, extended = True)
+            G = dp.construct_graph(node_list, edge_list)
+            G = G = add_non_existing_edges(G, original_r[k][0], add_node, weight = 1) ### add one edge from MIT to <node>
+            #r = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
+            r = choose_algorithm(G, type = type)
+            result = sorted(r.iteritems(), key = lambda asd:asd[1], reverse = True)
+            #result = sorted(hits.iteritems(), key = lambda asd:asd[1], reverse = True)
+            G.clear()
+            res1 = []
+            for e in result:
+                if e[0] in top_50:
+                    res1.append(e[0])
+            kr = 0
+            for i in range(len(res1)):
+                if res1[i] == original_r[k][0]:
+                    kr = i
+            original_r[k].append(k-kr)
+    print original_r
+    fo.write("univ,diff+%s1\n" %(add_node))
+    for r in original_r:
+        for i in range(len(r)):
+            if i == 0:
+                fo.write(str(r[i]))
+            else:
+                fo.write(","+str(r[i]))
+        fo.write("\n")
+    fo.close()
+
+
+def choose_algorithm(G, type = "hits_weighted"):
+    result = []
+    if type == "hits_weighted":
+        result = algo.weighted_HITS(G, max_iterations = 100, min_delta = 0.00001)
+        #print "hits_weighted", result
+    elif type == "hits_hubavg":
+        result = algo.hubavg_HITS(G, max_iterations = 100, min_delta = 0.00001)
+        #print "hits_hubavg", result
+    elif type == "weightedPR_w_norm":
+        result = algo.weighted_PR_wnorm(G, damping_factor = 0.85, max_iterations = 100, min_delta = 0.00001)
+        #print "weightedPR_w_norm", result
+    elif type == "weightedPR_wo_norm":
+        result = algo.weighted_PR_wonorm(G, damping_factor = 0.85, max_iterations = 100, min_delta = 0.00001)
+        #print "weightedPR_wo_norm", result
+    elif type == "indegree":
+        result = dp.rank_univ_indegree(G)
+        #print "indegree", result
+    else:
+        print "error type!"
+    return result
+
 def remove_significant_edge(G, univ = "harvard", rank = []):
     """
     @description: remove one existing significant in_edge from <univ>;
@@ -217,7 +352,9 @@ def add_non_existing_edges(G, univ = "harvard", fake_node = "mit", weight = 1):
     return G
 
 def main():
-    sensitive_3()
+    sensitive_remove_edge("../data/data_may28_new/data_top50_cs_may28_new.csv",
+                "../data/data_may28_new/top50_cs_may28_2015.txt",
+                "../result/result_may28/cs/sensitivity/cs_edge-1_indegree.csv", type = "indegree")
     
 if __name__ == "__main__":
     main()

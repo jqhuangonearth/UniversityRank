@@ -395,6 +395,119 @@ def hubavg_HITS(graph, max_iterations=100, min_delta=0.00001):
     return auth
 
 
+def authavg_HITS(graph, max_iterations=100, min_delta=0.00001):
+    """
+    Compute and return the HITS score in an directed graph, *averaging the auth by the number of incoming edges*
+    
+    @type  graph: digraph
+    @param graph: Digraph.
+    
+    @type  damping_factor: number
+    @param damping_factor: PageRank dumping factor.
+    
+    @type  min_delta: number
+    @param min_delta: Smallest variation required to have a new iteration.
+    
+    @rtype:  Dict
+    @return: Dict containing the auth score of all nodes
+    """
+    
+    nodes = graph.nodes()
+    graph_size = len(nodes)
+    if graph_size == 0:
+        return {}
+    
+    # itialize the page rank dict with 1/N for all nodes
+    auth = dict.fromkeys(nodes, 1.0)
+    hub = dict.fromkeys(nodes, 1.0)
+    
+    i = 0
+    for i in range(max_iterations):
+        for p in nodes:
+            in_edges = graph.in_edges(p, data = True)
+            split_factor = 0.0
+            for e in in_edges:
+                split_factor += e[2]["weight"]
+            hub_list = [hub.get(q[0])*q[2]["weight"]/split_factor for q in in_edges]
+            #print hub_list
+            auth[p] = sum(hub_list)
+
+        auth = normalize(auth)
+
+        old_hub = dict()
+        for p in nodes:
+            old_hub[p] = hub[p]
+            auth_list = [auth.get(r[1])*r[2]["weight"] for r in graph.out_edges(p, data = True)]
+            #print auth_list
+            hub[p] = sum(auth_list)
+
+        hub = normalize(hub)
+
+        delta = sum((abs(old_hub[k] - hub[k]) for k in hub))
+        if delta <= min_delta:
+            return auth
+    return auth
+
+
+def weighted_HITS_normalized(graph, max_iterations=100, min_delta=0.00001):
+    """
+    Compute and return the HITS score in an directed graph, *averaging the auth by the number of incoming edges* &&
+    *averaging the auth by the number of incoming edges*
+    
+    @type  graph: digraph
+    @param graph: Digraph.
+    
+    @type  damping_factor: number
+    @param damping_factor: PageRank dumping factor.
+    
+    @type  min_delta: number
+    @param min_delta: Smallest variation required to have a new iteration.
+    
+    @rtype:  Dict
+    @return: Dict containing the auth score of all nodes
+    """
+    
+    nodes = graph.nodes()
+    graph_size = len(nodes)
+    if graph_size == 0:
+        return {}
+    
+    # itialize the page rank dict with 1/N for all nodes
+    auth = dict.fromkeys(nodes, 1.0)
+    hub = dict.fromkeys(nodes, 1.0)
+    
+    i = 0
+    for i in range(max_iterations):
+        for p in nodes:
+            in_edges = graph.in_edges(p, data = True)
+            split_factor = 0.0
+            for e in in_edges:
+                split_factor += e[2]["weight"]
+            hub_list = [hub.get(q[0])*q[2]["weight"] for q in in_edges]
+            #print hub_list
+            auth[p] = sum(hub_list)
+
+        auth = normalize(auth)
+
+        old_hub = dict()
+        for p in nodes:
+            old_hub[p] = hub[p]
+            out_edges = graph.in_edges(p, data = True)
+            split_factor = 0.0
+            for e in out_edges:
+                split_factor += e[2]["weight"]
+            auth_list = [auth.get(r[1])*r[2]["weight"] for r in out_edges]
+            #print auth_list
+            hub[p] = sum(auth_list)
+
+        hub = normalize(hub)
+
+        delta = sum((abs(old_hub[k] - hub[k]) for k in hub))
+        if delta <= min_delta:
+            return auth
+    return auth
+
+
 def SALSA(graph):
     """
     Compute and return the auth and hub score using salsa (stochastic approach for link-structure \
